@@ -45,6 +45,15 @@ Para fazer o deploy desse projeto rode (considere ter a biblioteca do pyinstalle
 ```
 
 
+## Contribuindo
+
+Contribuições são sempre bem-vindas!
+
+Veja [contribuindo.md](https://github.com/MarcosOtilio/etrade_backup/blob/main/contribuindo.md) para saber como começar.
+
+Por favor, siga o `código de conduta` desse projeto.
+
+
 ## Facilitou sua vida?
 Se este projeto facilitou sua vida e te ajudou? Considere fazer um pix para o autor!
 
