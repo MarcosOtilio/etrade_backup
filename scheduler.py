@@ -1,44 +1,36 @@
 import schedule
-import time
-from threading import Event
+from backup_logic import BackupLogic
 
 class Scheduler:
     """
-    Gerencia o agendamento de backups automáticos. Roda em uma thread separada.
+    Gerencia o agendamento de backups automáticos.
     """
-    def __init__(self, backup_logic_instance, initial_schedules):
-        self.backup_logic = backup_logic_instance
-        self.stop_run_event = Event()
+    def __init__(self, backup_logic: BackupLogic, initial_schedules: list):
+        self.backup_logic = backup_logic
         self.update_schedules(initial_schedules)
 
-    def update_schedules(self, new_schedules):
-        """Limpa os agendamentos antigos e define novos."""
-        schedule.clear()
-        print(f"Atualizando agendamentos para: {new_schedules}")
-        for t in new_schedules:
-            try:
-                schedule.every().day.at(t).do(self.job)
-            except schedule.ScheduleValueError:
-                print(f"Formato de hora inválido para o agendamento: '{t}'. Use HH:MM.")
-        print(f"{len(schedule.get_jobs())} jobs agendados.")
-
-    def job(self):
-        """A tarefa que será executada pelo agendador."""
-        print(f"Executando backup agendado...")
+    def _run_scheduled_backup(self):
+        """
+        Método interno que será chamado pelo agendador.
+        """
+        print("Iniciando backup agendado...")
+        # A lógica de backup já imprime seus próprios logs, então não precisamos capturar o resultado aqui.
         self.backup_logic.perform_backup()
         print("Backup agendado concluído.")
 
-    def run(self):
+    def update_schedules(self, new_schedules: list):
         """
-        Inicia o loop do agendador. Este método deve ser o alvo da thread.
+        Limpa todos os agendamentos existentes e cria novos com base na lista fornecida.
         """
-        print("Agendador iniciado.")
-        while not self.stop_run_event.is_set():
-            schedule.run_pending()
-            time.sleep(1) # Espera 1 segundo entre as verificações
-        print("Agendador parado.")
-
-    def stop(self):
-        """Sinaliza para a thread do agendador parar."""
-        self.stop_run_event.set()
+        schedule.clear()
+        print(f"Atualizando agendamentos para: {new_schedules}")
+        
+        for time_str in new_schedules:
+            try:
+                schedule.every().day.at(time_str).do(self._run_scheduled_backup)
+            except Exception as e:
+                print(f"Erro ao tentar agendar o horário '{time_str}': {e}")
+        
+        job_count = len(schedule.get_jobs())
+        print(f"{job_count} jobs agendados.")
 

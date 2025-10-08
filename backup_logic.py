@@ -48,10 +48,13 @@ class BackupLogic:
             return None
 
     def perform_backup(self):
-        # ... (código existente - sem alterações)
         conn = self._get_connection()
         if not conn:
             return False, "Falha ao conectar: Verifique as credenciais e o driver."
+
+        # --- A CORREÇÃO É ESTA LINHA ---
+        conn.autocommit = True
+        # --- FIM DA CORREÇÃO ---
 
         backup_settings = self.config['backup_settings']
         db_name = backup_settings['db_name']
@@ -75,14 +78,13 @@ class BackupLogic:
             conn.close()
             print("Backup do banco de dados concluído com sucesso.")
 
-            # Compactação e cópias
             final_path = bak_filepath
             if backup_settings.get('compress_backup', False):
                 zip_filepath = os.path.join(backup_dir, f"{db_name}_{timestamp}.zip")
                 print(f"Compactando backup para {zip_filepath}...")
                 with zipfile.ZipFile(zip_filepath, 'w', zipfile.ZIP_DEFLATED) as zipf:
                     zipf.write(bak_filepath, bak_filename)
-                os.remove(bak_filepath) # Remove o .bak original
+                os.remove(bak_filepath)
                 final_path = zip_filepath
                 print("Compactação concluída.")
             
@@ -94,12 +96,10 @@ class BackupLogic:
             self.cleanup_old_backups()
             return True, f"Backup concluído com sucesso em {final_path}"
         except Exception as e:
+            conn.close() # Garante que a conexão seja fechada em caso de erro
             return False, f"Erro durante o backup: {e}"
 
     def perform_restore(self, backup_file_path):
-        """
-        Restaura um banco de dados a partir de um arquivo .bak ou .zip.
-        """
         db_name = self.config['backup_settings']['db_name']
         bak_file_to_restore = ""
         temp_dir = None
@@ -141,7 +141,6 @@ class BackupLogic:
             return True, f"Banco de dados '{db_name}' restaurado com sucesso!"
 
         except Exception as e:
-            # Tentar reverter para MULTI_USER em caso de falha
             if conn:
                 try:
                     cursor = conn.cursor()
@@ -160,7 +159,6 @@ class BackupLogic:
         self.config = new_config
 
     def cleanup_old_backups(self):
-        # ... (código existente - sem alterações)
         backup_settings = self.config['backup_settings']
         backup_dir = backup_settings['path']
         retention_days = backup_settings['retention_days']

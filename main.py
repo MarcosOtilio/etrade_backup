@@ -10,14 +10,10 @@ from config_manager import ConfigManager
 from backup_logic import BackupLogic
 from scheduler import Scheduler
 from startup import create_startup_shortcut
-import driver_installer # Novo import
+import driver_installer
 
 def main():
-    # --- NOVA ROTINA DE VERIFICAÇÃO DO DRIVER ---
-    # Esta verificação é feita antes de qualquer outra coisa.
-    # A função cuidará de pedir elevação e reiniciar o app se necessário.
     driver_installer.check_and_install_driver()
-    # --- FIM DA NOVA ROTINA ---
     
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
@@ -27,9 +23,11 @@ def main():
     
     backup_logic = BackupLogic(config)
     
-    main_window = MainWindow(config_manager, backup_logic)
-    
+    # 1. Instância do agendador criada aqui
     scheduler = Scheduler(backup_logic, config.get('schedules', []))
+    
+    # 2. Agendador é passado para a janela principal
+    main_window = MainWindow(config_manager, backup_logic, scheduler)
     
     def run_scheduler():
         while True:
