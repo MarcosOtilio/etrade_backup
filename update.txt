@@ -1,19 +1,22 @@
-1.3.0
+1.3.1
 https://www.google.com/search?q=https://github.com/SEU_USUARIO/SEU_REPOSITORIO/releases/download/v1.3.0/etrade_backup_installer.exe
 
-[Novidades da Versão 1.3.0]
+========================================
+🚀 ATUALIZAÇÃO v1.3.1 — 08/10/2025
+========================================
 
- • Adicionado sistema de verificação de atualizações automáticas.
- • Nova janela para visualizar o changelog e baixar novas versões.
+✨ Novidades
+- Foi implementado botão de Teste de Conexão
+abaixo da configurações do banco de dados.
+- Foi adicionado a opção de inicialização
+minimizado na bandeja do sistema.
+- Foi adicionado um botão para ativar ou desativar
+a inicialização automática ao ligar o computador.
 
-[Melhorias]
+⚙️ Melhorias
+- Lógica de backup refatorada e melhorada
+- Configuração de inicialização refatorada
 
- • A interface foi reorganizada em duas colunas para melhor visualização.
- • O arquivo de configuração (config.json) agora é salvo na pasta de dados do usuário (%APPDATA%), evitando problemas de permissão.
- • Adicionada uma janela "Sobre" com informações do projeto.
- • Melhorias na detecção de drivers ODBC do SQL Server para maior compatibilidade.
-
-[Novas Funcionalidades]
-
- • Opção para compactar automaticamente os backups em formato .zip.
- • Possibilidade de adicionar múltiplos locais para salvar cópias de segurança.
+----------------------------------------
+Desenvolvido por Marcos Otílio • 2025
+----------------------------------------

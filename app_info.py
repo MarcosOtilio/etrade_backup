@@ -1,5 +1,5 @@
 APP_NAME = "ETrade Backup"
-CURRENT_VERSION = "1.3.0" # Use o formato X.Y.Z para comparação correta
+CURRENT_VERSION = "1.3.1" # Use o formato X.Y.Z para comparação correta
 
 # URL para o arquivo de texto no seu repositório GitHub.
 # Este arquivo deve conter:

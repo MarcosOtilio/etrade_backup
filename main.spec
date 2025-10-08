@@ -5,7 +5,10 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('assets', 'assets')],
+    datas=[
+        ('assets', 'assets'),
+        ('drivers', 'drivers')
+        ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -22,7 +25,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='main',
+    name='ETrade backup',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

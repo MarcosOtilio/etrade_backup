@@ -9,7 +9,7 @@ from ui import MainWindow
 from config_manager import ConfigManager
 from backup_logic import BackupLogic
 from scheduler import Scheduler
-from startup import create_startup_shortcut
+import startup # Import alterado
 import driver_installer
 
 def main():
@@ -22,11 +22,7 @@ def main():
     config = config_manager.load_config()
     
     backup_logic = BackupLogic(config)
-    
-    # 1. Instância do agendador criada aqui
     scheduler = Scheduler(backup_logic, config.get('schedules', []))
-    
-    # 2. Agendador é passado para a janela principal
     main_window = MainWindow(config_manager, backup_logic, scheduler)
     
     def run_scheduler():
@@ -50,11 +46,19 @@ def main():
     tray_icon.setContextMenu(menu)
     tray_icon.show()
     
-    main_window.show()
-    create_startup_shortcut()
+    # --- LÓGICA DE INICIALIZAÇÃO MINIMIZADA ---
+    startup_settings = config.get('startup_settings', {})
+    if not startup_settings.get('start_minimized', False):
+        main_window.show()
+    # --- FIM DA LÓGICA ---
+    
+    # Garante que o atalho esteja em conformidade com a configuração
+    if startup_settings.get('auto_start_enabled', True):
+        startup.create_startup_shortcut()
+    else:
+        startup.remove_startup_shortcut()
     
     sys.exit(app.exec())
 
 if __name__ == '__main__':
     main()
-
