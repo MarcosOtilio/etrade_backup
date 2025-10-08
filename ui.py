@@ -11,39 +11,74 @@ from app_info import APP_NAME, CURRENT_VERSION
 import update_manager
 from config_manager import ConfigManager
 from backup_logic import BackupLogic
-from scheduler import Scheduler # Importa a classe Scheduler
+from scheduler import Scheduler
 from styles import get_stylesheet
 
+# --- JANELA "SOBRE" ATUALIZADA ---
 class AboutDialog(QDialog):
+    """
+    Janela "Sobre" customizada para exibir texto, créditos, link e o QR Code.
+    """
     def __init__(self, parent=None):
         super().__init__(parent)
+
         self.setWindowTitle(f"Sobre o {APP_NAME}")
         self.setWindowIcon(QIcon("assets/icon.png"))
+        
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.setSpacing(15)
+        layout.setSpacing(10)
+
         title = QLabel(f"{APP_NAME} v{CURRENT_VERSION}")
         title.setStyleSheet("font-size: 14pt; font-weight: bold;")
         layout.addWidget(title)
-        description = QLabel("Aplicativo para automação de backups de bancos de dados SQL Server.\nDesenvolvido para garantir a segurança dos seus dados.")
+
+        description = QLabel(
+            "Aplicativo para automação de backups de bancos de dados SQL Server.\n"
+            "Desenvolvido para garantir a segurança dos seus dados."
+        )
         description.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(description)
-        donation_label = QLabel("\nGostou do projeto? Considere fazer uma doação via PIX!")
+
+        credits_widget = QWidget()
+        credits_layout = QHBoxLayout(credits_widget)
+        credits_layout.setContentsMargins(0,0,0,0)
+        credits_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        credits_label = QLabel("Desenvolvido por: Marcos Otílio |")
+        credits_label.setStyleSheet("font-size: 9pt;")
+        
+        # Altere para a URL do seu repositório
+        repo_link = 'https://github.com/MarcosOtilio/etrade_backup'
+        repo_label = QLabel(f'<a href="{repo_link}">Repositório no GitHub</a>')
+        repo_label.setOpenExternalLinks(True) # Permite que o link seja clicável
+        repo_label.setStyleSheet("font-size: 9pt;")
+
+        credits_layout.addWidget(credits_label)
+        credits_layout.addWidget(repo_label)
+        layout.addWidget(credits_widget)
+        # --- FIM DA SEÇÃO DE CRÉDITOS ---
+        
+        donation_label = QLabel("Gostou do projeto? Considere fazer uma doação via PIX!")
         donation_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(donation_label)
+
         qr_code_label = QLabel()
         qr_code_path = "assets/pix_qrcode.png"
         if os.path.exists(qr_code_path):
             pixmap = QPixmap(qr_code_path)
-            qr_code_label.setPixmap(pixmap.scaled(200, 200, Qt.AspectRatioMode.KeepAspectRatio))
+            qr_code_label.setPixmap(pixmap.scaled(180, 180, Qt.AspectRatioMode.KeepAspectRatio))
         else:
             qr_code_label.setText("QR Code não encontrado em\nassets/pix_qrcode.png")
         qr_code_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(qr_code_label)
+
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
         buttons.accepted.connect(self.accept)
         layout.addWidget(buttons)
 
+# O restante do arquivo permanece exatamente o mesmo
+# ... (UpdateCheckThread, UpdateDialog, RestoreThread, etc.)
 class UpdateCheckThread(QThread):
     result_ready = pyqtSignal(dict)
     def run(self):
@@ -177,14 +212,13 @@ class BackupThread(QThread):
         self.finished.emit(message)
 
 class MainWindow(QMainWindow):
-    # 1. Construtor atualizado para receber o agendador
     def __init__(self, config_manager: ConfigManager, backup_logic: BackupLogic, scheduler: Scheduler):
         super().__init__()
         self.config_manager = config_manager
         self.backup_logic = backup_logic
-        self.scheduler = scheduler # Armazena a instância do agendador
+        self.scheduler = scheduler
         self.config = self.config_manager.get_config()
-        self.current_theme = self.config.get('theme', 'light')
+        self.current_theme = self.config.get('theme', 'dark')
         self.setWindowTitle(f"{APP_NAME} - Configurações")
         self.setWindowIcon(QIcon("assets/icon.png"))
         self.setMinimumSize(850, 750) 
@@ -194,30 +228,6 @@ class MainWindow(QMainWindow):
         self.apply_theme()
         self.old_pos = self.pos()
     
-    # 2. Método save_settings atualizado
-    def save_settings(self):
-        self.config['sql_server']['server'] = self.server_input.text()
-        self.config['sql_server']['user'] = self.user_input.text()
-        self.config['sql_server']['password'] = self.password_input.text()
-        self.config['backup_settings']['compress_backup'] = self.compress_checkbox.isChecked()
-        secondary_paths = [self.secondary_path_list.item(i).text() for i in range(self.secondary_path_list.count())]
-        self.config['backup_settings']['secondary_paths'] = secondary_paths
-        
-        schedules = [self.schedule_list.item(i).text() for i in range(self.schedule_list.count())]
-        self.config['schedules'] = schedules
-        
-        self.config['theme'] = self.current_theme
-        
-        self.config_manager.save_config(self.config)
-        self.backup_logic.update_config(self.config)
-        
-        # A LINHA MAIS IMPORTANTE: Avisa o agendador sobre os novos horários
-        self.scheduler.update_schedules(schedules)
-        
-        self.log_output.append("Configurações salvas e agendamentos atualizados.")
-        QMessageBox.information(self, "Sucesso", "As configurações foram salvas e os agendamentos atualizados.")
-
-    # O resto do arquivo ui.py permanece o mesmo...
     def setup_ui(self):
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
@@ -331,13 +341,20 @@ class MainWindow(QMainWindow):
         self.theme_button.clicked.connect(self.toggle_theme)
         action_buttons_layout.addWidget(self.theme_button)
         content_layout.addLayout(action_buttons_layout)
+    
     def show_restore_dialog(self):
         self.save_settings() 
         dialog = RestoreDialog(self.backup_logic, self)
         dialog.exec()
+
     def show_update_dialog(self):
         dialog = UpdateDialog(self)
         dialog.exec()
+
+    def show_about_dialog(self):
+        dialog = AboutDialog(self)
+        dialog.exec()
+
     def create_form_row(self, label_text, widget):
         row_widget = QWidget()
         row_layout = QHBoxLayout(row_widget)
@@ -347,11 +364,13 @@ class MainWindow(QMainWindow):
         row_layout.addWidget(label)
         row_layout.addWidget(widget)
         return row_widget
+
     def create_group_label(self, text):
         label = QLabel(text)
         label.setObjectName("groupLabel")
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         return label
+
     def load_settings(self):
         self.server_input.setText(self.config['sql_server']['server'])
         self.user_input.setText(self.config['sql_server']['user'])
@@ -360,10 +379,28 @@ class MainWindow(QMainWindow):
         self.update_schedule_list()
         self.update_secondary_path_list()
         self.log_output.append("Configurações carregadas.")
+
+    def save_settings(self):
+        self.config['sql_server']['server'] = self.server_input.text()
+        self.config['sql_server']['user'] = self.user_input.text()
+        self.config['sql_server']['password'] = self.password_input.text()
+        self.config['backup_settings']['compress_backup'] = self.compress_checkbox.isChecked()
+        secondary_paths = [self.secondary_path_list.item(i).text() for i in range(self.secondary_path_list.count())]
+        self.config['backup_settings']['secondary_paths'] = secondary_paths
+        schedules = [self.schedule_list.item(i).text() for i in range(self.schedule_list.count())]
+        self.config['schedules'] = schedules
+        self.config['theme'] = self.current_theme
+        self.config_manager.save_config(self.config)
+        self.backup_logic.update_config(self.config)
+        self.scheduler.update_schedules(schedules)
+        self.log_output.append("Configurações salvas e agendamentos atualizados.")
+        QMessageBox.information(self, "Sucesso", "As configurações foram salvas e os agendamentos atualizados.")
+
     def update_schedule_list(self):
         self.schedule_list.clear()
         for schedule in self.config.get('schedules', []):
             self.schedule_list.addItem(QListWidgetItem(schedule))
+
     def add_schedule(self):
         new_time = self.new_time_input.time().toString("HH:mm")
         items = [self.schedule_list.item(i).text() for i in range(self.schedule_list.count())]
@@ -372,17 +409,20 @@ class MainWindow(QMainWindow):
             self.log_output.append(f"Horário {new_time} adicionado à lista.")
         else:
             self.log_output.append(f"Horário {new_time} já existe na lista.")
+
     def remove_schedule(self):
         selected_items = self.schedule_list.selectedItems()
         if not selected_items: return
         for item in selected_items:
             self.log_output.append(f"Horário {item.text()} removido.")
             self.schedule_list.takeItem(self.schedule_list.row(item))
+
     def update_secondary_path_list(self):
         self.secondary_path_list.clear()
         paths = self.config['backup_settings'].get('secondary_paths', [])
         for path in paths:
             self.secondary_path_list.addItem(path)
+
     def add_secondary_path(self):
         directory = QFileDialog.getExistingDirectory(self, "Selecionar Pasta para Cópia de Segurança")
         if directory:
@@ -392,12 +432,14 @@ class MainWindow(QMainWindow):
                 self.log_output.append(f"Local de cópia adicionado: {directory}")
             else:
                 self.log_output.append("Este local já está na lista.")
+
     def remove_secondary_path(self):
         selected_items = self.secondary_path_list.selectedItems()
         if not selected_items: return
         for item in selected_items:
             self.log_output.append(f"Local de cópia removido: {item.text()}")
             self.secondary_path_list.takeItem(self.secondary_path_list.row(item))
+
     def run_manual_backup(self):
         self.log_output.append("Iniciando backup manual...")
         self.backup_now_button.setEnabled(False)
@@ -406,35 +448,39 @@ class MainWindow(QMainWindow):
         self.backup_thread = BackupThread(self.backup_logic)
         self.backup_thread.finished.connect(self.on_backup_finished)
         self.backup_thread.start()
+
     def on_backup_finished(self, message):
         self.log_output.append(message)
         self.backup_now_button.setEnabled(True)
         self.backup_now_button.setText("Fazer Backup Agora")
         QMessageBox.information(self, "Backup Manual", message)
-    def show_about_dialog(self):
-        dialog = AboutDialog(self)
-        dialog.exec()
+
     def toggle_theme(self):
         self.current_theme = 'light' if self.current_theme == 'dark' else 'dark'
         self.apply_theme()
         self.log_output.append(f"Tema alterado para {self.current_theme}.")
+
     def apply_theme(self):
         self.setStyleSheet(get_stylesheet(self.current_theme))
+
     def closeEvent(self, event):
         event.ignore()
         self.hide()
+        
     def show_normal(self):
         self.show()
         self.activateWindow()
         self.raise_()
+
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton and event.pos().y() < self.title_bar.height():
             self.old_pos = event.globalPosition().toPoint()
+
     def mouseMoveEvent(self, event):
         if event.buttons() == Qt.MouseButton.LeftButton and self.old_pos:
             delta = event.globalPosition().toPoint() - self.old_pos
             self.move(self.pos() + delta)
             self.old_pos = event.globalPosition().toPoint()
+            
     def mouseReleaseEvent(self, event):
         self.old_pos = None
-

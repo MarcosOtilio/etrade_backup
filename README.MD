@@ -74,3 +74,6 @@ Chave PIX: sua-chave-pix-aqui
 
 Licença
 Este projeto está licenciado sob a Licença MIT. Veja o arquivo LICENSE para mais detalhes.
+
+
+watchmedo auto-restart --directory=. --pattern="*.py" --recursive -- python
