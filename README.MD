@@ -3,10 +3,15 @@
 
 ETrade Backup é um aplicativo de desktop para Windows, desenvolvido em Python, que automatiza o processo de backup de bancos de dados SQL Server. Ele roda em segundo plano, possui uma interface moderna e oferece funcionalidades robustas para garantir a segurança dos seus dados.
 
+<<<<<<< HEAD
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
 ![App Screenshot](https://raw.githubusercontent.com/MarcosOtilio/etrade_backup/refs/heads/main/assets/Screenshot.png)
 
+=======
+![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
+![Tela principal](https://raw.githubusercontent.com/MarcosOtilio/etrade_backup/refs/heads/main/assets/screenshot.png)
+>>>>>>> 09adbfc3a0e94d44f066845ab039801a3b6f81a6
 ## Funcionalidades
 
 - **Automação de Backups:** Agende backups diários em horários específicos.
