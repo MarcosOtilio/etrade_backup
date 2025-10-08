@@ -1,0 +1,6 @@
+PyQt6
+pyodbc
+schedule
+winshell
+pypiwin32
+requests
