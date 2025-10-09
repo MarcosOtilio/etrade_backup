@@ -15,6 +15,7 @@ from backup_logic import BackupLogic
 from scheduler import Scheduler
 import startup # Módulo de inicialização
 from styles import get_stylesheet
+from utils import resource_path
 
 # --- Classes de Diálogo (Sobre, Atualização, Restauração) ---
 class AboutDialog(QDialog):
@@ -76,8 +77,9 @@ class UpdateDialog(QDialog):
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.layout.addWidget(self.status_label)
         self.loading_label = QLabel(alignment=Qt.AlignmentFlag.AlignCenter)
-        if os.path.exists("assets/loading.gif"):
-            self.movie = QMovie("assets/loading.gif")
+        loading_gif_path = resource_path("assets/loading.gif")
+        if os.path.exists(loading_gif_path):
+            self.movie = QMovie(loading_gif_path)
             self.loading_label.setMovie(self.movie)
             self.movie.start()
         self.layout.addWidget(self.loading_label)
@@ -174,7 +176,7 @@ class MainWindow(QMainWindow):
         self.config = self.config_manager.get_config()
         self.current_theme = self.config.get('theme', 'dark')
         self.setWindowTitle(f"{APP_NAME} - Configurações")
-        self.setWindowIcon(QIcon("assets/icon.png"))
+        self.setWindowIcon(QIcon(resource_path("assets/icon.png")))
         self.setMinimumSize(850, 750) 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setup_ui()
@@ -193,16 +195,19 @@ class MainWindow(QMainWindow):
         title_layout = QHBoxLayout(self.title_bar)
         title_layout.setContentsMargins(10,0,10,0)
         
-        title_layout.addWidget(QLabel(pixmap=QIcon("assets/icon.png").pixmap(24, 24)))
+        title_layout.addWidget(QLabel(pixmap=QIcon(resource_path("assets/icon.png")).pixmap(24, 24)))
         title_layout.addWidget(QLabel(APP_NAME, objectName="titleLabel"), alignment=Qt.AlignmentFlag.AlignLeft)
         title_layout.addStretch()
-        for tooltip, icon_path, callback in [
-            ("Verificar Atualizações", "assets/icon_update.png", self.show_update_dialog),
+        for tooltip, icon_filename, callback in [
+            ("Verificar Atualizações", "icon_update.png", self.show_update_dialog),
             (f"Sobre o {APP_NAME}", None, self.show_about_dialog),
             ("Minimizar", None, self.hide)
         ]:
             btn = QPushButton("?" if "Sobre" in tooltip else ("—" if "Minimizar" in tooltip else ""))
-            if icon_path and os.path.exists(icon_path): btn.setIcon(QIcon(icon_path))
+            if icon_filename:
+                icon_path = resource_path(os.path.join("assets", icon_filename))
+                if os.path.exists(icon_path):
+                    btn.setIcon(QIcon(icon_path))
             btn.setObjectName("titleButton")
             btn.setFixedSize(30, 30)
             btn.setToolTip(tooltip)
@@ -241,7 +246,7 @@ class MainWindow(QMainWindow):
         startup_widget = QWidget()
         startup_layout = QHBoxLayout(startup_widget)
         startup_layout.setContentsMargins(0,0,0,0)
-        self.toggle_startup_button = QPushButton("Ativa/Desativar Inicialização Automática", clicked=self.toggle_auto_startup)
+        self.toggle_startup_button = QPushButton("Gerenciar Inicialização Automática", clicked=self.toggle_auto_startup)
         self.startup_status_label = QLabel("Status: ...")
         startup_layout.addWidget(self.toggle_startup_button)
         startup_layout.addWidget(self.startup_status_label)
@@ -290,15 +295,12 @@ class MainWindow(QMainWindow):
         row = QWidget()
         layout = QHBoxLayout(row)
         layout.setContentsMargins(0,0,0,0)
-        # --- CORREÇÃO FINAL AQUI ---
         label = QLabel(label_text)
         label.setFixedWidth(80)
         layout.addWidget(label)
-        # --- FIM DA CORREÇÃO ---
         layout.addWidget(widget)
         return row
 
-    # ... (O resto do arquivo não foi alterado)
     def on_test_connection(self):
         server, user, password = self.server_input.text(), self.user_input.text(), self.password_input.text()
         success, message = self.backup_logic.test_connection(server, user, password)

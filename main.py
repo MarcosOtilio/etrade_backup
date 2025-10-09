@@ -9,8 +9,9 @@ from ui import MainWindow
 from config_manager import ConfigManager
 from backup_logic import BackupLogic
 from scheduler import Scheduler
-import startup # Import alterado
+import startup
 import driver_installer
+from utils import resource_path # Novo import
 
 def main():
     driver_installer.check_and_install_driver()
@@ -33,7 +34,12 @@ def main():
     scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
     scheduler_thread.start()
 
-    tray_icon = QSystemTrayIcon(QIcon("assets/icon.ico"), parent=app)
+    # --- CORREÇÃO AQUI ---
+    # Usamos resource_path para encontrar o ícone
+    icon_path = resource_path("assets/icon.ico")
+    tray_icon = QSystemTrayIcon(QIcon(icon_path), parent=app)
+    # --- FIM DA CORREÇÃO ---
+    
     tray_icon.setToolTip("ETrade Backup")
     
     menu = QMenu()
@@ -46,13 +52,10 @@ def main():
     tray_icon.setContextMenu(menu)
     tray_icon.show()
     
-    # --- LÓGICA DE INICIALIZAÇÃO MINIMIZADA ---
     startup_settings = config.get('startup_settings', {})
     if not startup_settings.get('start_minimized', False):
         main_window.show()
-    # --- FIM DA LÓGICA ---
     
-    # Garante que o atalho esteja em conformidade com a configuração
     if startup_settings.get('auto_start_enabled', True):
         startup.create_startup_shortcut()
     else:
