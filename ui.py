@@ -144,7 +144,9 @@ class RestoreDialog(QDialog):
         layout.addWidget(self.restore_button)
     def select_file(self):
         if file := QFileDialog.getOpenFileName(self, "Selecionar Backup", "", "Arquivos de Backup (*.bak *.zip)")[0]:
-            self.file_path, self.path_label.setText(file), self.restore_button.setEnabled(True)
+            self.file_path = file
+            self.path_label.setText(file)
+            self.restore_button.setEnabled(True)
     def run_restore(self):
         if QMessageBox.warning(self, "Confirmação Crítica", "TEM CERTEZA?\nTODOS os dados atuais do banco serão PERDIDOS e substituídos.", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No) == QMessageBox.StandardButton.No: return
         self.restore_button.setEnabled(False)

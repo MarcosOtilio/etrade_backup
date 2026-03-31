@@ -1,6 +1,6 @@
-PyQt6
-pyodbc
-schedule
-winshell
-pypiwin32
-requests
+PyQt6>=0.0.1
+pyodbc>=0.0.1
+schedule>=0.0.1
+winshell>=0.0.1
+pypiwin32>=0.0.1
+requests>=0.0.1
