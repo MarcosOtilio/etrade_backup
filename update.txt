@@ -1,6 +1,37 @@
-1.3.1
-https://www.google.com/search?q=https://github.com/SEU_USUARIO/SEU_REPOSITORIO/releases/download/v1.3.0/etrade_backup_installer.exe
+1.3.3
+https://github.com/MarcosOtilio/etrade_backup/releases/download/V1.3.3/ETrade.backup.exe
 
+========================================
+🚀 ATUALIZAÇÃO v1.3.1 — 08/10/2025
+========================================
+
+✨ Novas Funcionalidades (Features)
+
+Interface Reformulada: A tela principal agora é dedicada exclusivamente ao monitoramento de status e logs de atividades. Todas as configurações foram movidas para uma nova janela modal dividida em abas (Banco de Dados, Opções Gerais, Destinos/Agendamentos e Arquivos Extras).
+
+Integração Inteligente (ArqID): Adicionada rotina para importar automaticamente as credenciais do SQL Server lendo o arquivo C:\ETrade\ArqID.txt na primeira execução.
+
+Backup Multi-Arquivos: O motor de backup agora permite incluir pastas e arquivos adicionais arbitrários (ex: imagens, XMLs) dentro do arquivo .zip final.
+
+Múltiplos Destinos: Suporte para definir vários caminhos de diretórios onde os backups serão copiados simultaneamente.
+
+Retenção de Backups: Nova opção na interface para definir o número de dias que os backups antigos serão mantidos antes de serem excluídos automaticamente.
+
+Central de Ajuda: Nova tela de "Ajuda e Instruções" adicionada à interface principal.
+
+🛠 Melhorias e Refatorações (Refactor & Style)
+
+Estilização de Temas (QSS): Arquivo styles.py atualizado para suportar os novos componentes (QTabWidget, QTabBar, QSpinBox), garantindo leitura perfeita nos temas Claro e Escuro.
+
+UX Melhorada: Separação das ações de "Testar Conexão" e "Salvar Configurações" para evitar salvamentos acidentais de dados incorretos.
+
+🐛 Correções Críticas (Bug Fixes)
+
+Correção no Seletor de Arquivos: Corrigido bug de atribuição de tupla na tela de restauração que impedia o carregamento do caminho do arquivo.
+
+Solução para Erro 5 do SQL Server: Alterado o diretório temporário de extração de ZIPs para C:\ETrade\TempRestore e adicionada chamada nativa (icacls) para garantir permissões de leitura ao serviço do Windows, acabando com o "Acesso Negado".
+
+Sincronismo de Restauração (State Restoring): Inserido o laço while cursor.nextset(): pass na função de restauração para obrigar o Python a aguardar o SQL Server concluir o processo 100% antes de tentar liberar o modo multi-usuário.
 ========================================
 🚀 ATUALIZAÇÃO v1.3.1 — 08/10/2025
 ========================================
