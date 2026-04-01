@@ -72,28 +72,72 @@ class BackupLogic:
         except Exception as e:
             if conn: conn.close()
             return False, f"Erro durante o backup: {e}"
+    
     def perform_restore(self, backup_file_path):
-        db_name, bak_file_to_restore, temp_dir, conn = self.config['backup_settings']['db_name'], "", None, None
+        import os, zipfile, shutil, subprocess, uuid
+        
+        db_name = self.config['backup_settings']['db_name']
+        bak_file_to_restore = ""
+        temp_dir = None
+        conn = None
+        
         try:
             if backup_file_path.lower().endswith('.zip'):
-                temp_dir = tempfile.mkdtemp(prefix="etrade_restore_")
+                # Cria a pasta pública e única para evitar o Erro 5 (Acesso Negado)
+                base_temp_dir = r"C:\ETrade\TempRestore"
+                os.makedirs(base_temp_dir, exist_ok=True)
+                
+                temp_dir = os.path.join(base_temp_dir, f"restore_{uuid.uuid4().hex[:8]}")
+                os.makedirs(temp_dir, exist_ok=True)
+                
                 with zipfile.ZipFile(backup_file_path, 'r') as zip_ref:
                     bak_files = [f for f in zip_ref.namelist() if f.lower().endswith('.bak')]
-                    if not bak_files: return False, "Nenhum arquivo .bak encontrado dentro do arquivo .zip."
+                    if not bak_files: 
+                        return False, "Nenhum arquivo .bak encontrado dentro do arquivo .zip."
+                    
                     zip_ref.extract(bak_files[0], temp_dir)
                     bak_file_to_restore = os.path.join(temp_dir, bak_files[0])
-            elif backup_file_path.lower().endswith('.bak'): bak_file_to_restore = backup_file_path
-            else: return False, "Tipo de arquivo inválido. Selecione um arquivo .bak ou .zip."
+                
+                # Força a permissão de leitura para todos os usuários/serviços do Windows
+                try:
+                    subprocess.run(['icacls', temp_dir, '/grant', '*S-1-1-0:(OI)(CI)F', '/T'], capture_output=True, text=True)
+                except: 
+                    pass
+                    
+            elif backup_file_path.lower().endswith('.bak'): 
+                bak_file_to_restore = backup_file_path
+            else: 
+                return False, "Tipo de arquivo inválido. Selecione um arquivo .bak ou .zip."
+            
             conn = self._get_connection(master_db=True)
-            if not conn: return False, "Não foi possível conectar ao banco de dados 'master' para a restauração."
+            if not conn: 
+                return False, "Não foi possível conectar ao banco de dados 'master' para a restauração."
+            
             conn.autocommit = True
             cursor = conn.cursor()
-            cursor.execute(f"ALTER DATABASE [{db_name}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE")
-            cursor.execute(f"RESTORE DATABASE [{db_name}] FROM DISK = ? WITH REPLACE", bak_file_to_restore)
+            
+            # 1. Tenta derrubar usuários conectados (Ignora o erro se o banco já estiver travado)
+            try:
+                cursor.execute(f"ALTER DATABASE [{db_name}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE")
+            except Exception as e:
+                print(f"Ignorando erro ao definir SINGLE_USER: {e}")
+            
+            # 2. Manda o comando de restauração substituindo o banco atual
+            sql_restore = f"RESTORE DATABASE [{db_name}] FROM DISK = N'{bak_file_to_restore}' WITH REPLACE"
+            cursor.execute(sql_restore)
+            
+            # --- O GRANDE SEGREDO AQUI ---
+            # Obriga o Python a esperar todas as mensagens do SQL Server até a restauração concluir 100%
+            while cursor.nextset(): 
+                pass
+            
+            # 3. Restauração concluída! Agora é seguro devolver o acesso multi-usuário
             cursor.execute(f"ALTER DATABASE [{db_name}] SET MULTI_USER")
+            
             cursor.close()
             conn.close()
             return True, f"Banco de dados '{db_name}' restaurado com sucesso!"
+            
         except Exception as e:
             if conn:
                 try:
@@ -101,10 +145,19 @@ class BackupLogic:
                     cursor.execute(f"ALTER DATABASE [{db_name}] SET MULTI_USER")
                     cursor.close()
                     conn.close()
-                except Exception as inner_e: print(f"Não foi possível reverter para multi-usuário: {inner_e}")
+                except: 
+                    pass
             return False, f"Falha na restauração: {e}"
+            
         finally:
-            if temp_dir and os.path.exists(temp_dir): shutil.rmtree(temp_dir)
+            # Apaga os rastros do arquivo temporário
+            if temp_dir and os.path.exists(temp_dir): 
+                try:
+                    shutil.rmtree(temp_dir)
+                except Exception as cleanup_e:
+                    print(f"Aviso: Não foi possível limpar a pasta temporária: {cleanup_e}")
+                    
+                    
     def update_config(self, new_config):
         self.config = new_config
     def cleanup_old_backups(self):

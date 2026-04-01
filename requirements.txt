@@ -1,4 +1,4 @@
-PyQt6>=0.0.1
+PyQt6>=6.7.0
 pyodbc>=0.0.1
 schedule>=0.0.1
 winshell>=0.0.1

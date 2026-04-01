@@ -42,7 +42,7 @@ def get_stylesheet(theme='dark'):
             QPushButton#titleButton:hover {
                 color: #333;
             }
-            QLineEdit, QTextEdit, QListWidget, QTimeEdit {
+            QLineEdit, QTextEdit, QListWidget, QTimeEdit, QSpinBox {
                 background-color: #fff;
                 border: 1px solid #ccc;
                 border-radius: 4px;
@@ -56,6 +56,31 @@ def get_stylesheet(theme='dark'):
                 padding-bottom: 5px;
                 margin-top: 10px;
                 margin-bottom: 5px;
+            }
+            /* Estilos das Guias (Abas) - Tema Claro */
+            QTabWidget::pane {
+                border: 1px solid #ccc;
+                background-color: #f0f0f0;
+                border-radius: 4px;
+            }
+            QTabBar::tab {
+                background-color: #e0e0e0;
+                color: #555;
+                padding: 8px 20px;
+                border: 1px solid #ccc;
+                border-bottom-color: #f0f0f0; /* Mescla com o fundo do painel */
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+                margin-right: 2px;
+            }
+            QTabBar::tab:selected {
+                background-color: #f0f0f0;
+                color: #333;
+                font-weight: bold;
+                border-bottom-color: #f0f0f0;
+            }
+            QTabBar::tab:hover:!selected {
+                background-color: #dcdcdc;
             }
         """
     else: # Dark theme
@@ -98,7 +123,7 @@ def get_stylesheet(theme='dark'):
             QPushButton#titleButton:hover {
                 color: #fff;
             }
-            QLineEdit, QTextEdit, QListWidget, QTimeEdit {
+            QLineEdit, QTextEdit, QListWidget, QTimeEdit, QSpinBox {
                 background-color: #3c3c3c;
                 border: 1px solid #555;
                 border-radius: 4px;
@@ -119,5 +144,31 @@ def get_stylesheet(theme='dark'):
                 padding-bottom: 5px;
                 margin-top: 10px;
                 margin-bottom: 5px;
+            }
+            /* Estilos das Guias (Abas) - Tema Escuro */
+            QTabWidget::pane {
+                border: 1px solid #555;
+                background-color: #2b2b2b;
+                border-radius: 4px;
+            }
+            QTabBar::tab {
+                background-color: #3c3c3c;
+                color: #aaa;
+                padding: 8px 20px;
+                border: 1px solid #555;
+                border-bottom-color: #2b2b2b;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+                margin-right: 2px;
+            }
+            QTabBar::tab:selected {
+                background-color: #2b2b2b;
+                color: #00aaff;
+                font-weight: bold;
+                border-bottom-color: #2b2b2b; /* Remove a linha de baixo para parecer conectado ao painel */
+            }
+            QTabBar::tab:hover:!selected {
+                background-color: #4f4f4f;
+                color: #fff;
             }
         """
